@@ -1,0 +1,60 @@
+name: Tüm Ödevleri Güncelle
+
+on:
+  schedule:
+    # UTC 15:00 = Türkiye saati (UTC+3) ile her gün 18:00
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+    # GitHub Actions sekmesinden istediğin zaman elle tetikleyebilmek için
+
+permissions:
+  contents: write
+
+jobs:
+  odevleri-guncelle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Gerekli kütüphaneleri yükle
+        run: pip install requests beautifulsoup4
+
+      - name: 5. sınıf ödevlerini çek (5A, 5B)
+        run: |
+          python odev_5a.py
+          python odev_5b.py
+
+      - name: 6. sınıf ödevlerini çek (6B, 6C, 6E)
+        run: |
+          python odev_6b.py
+          python odev_6c.py
+          python odev_6e.py
+
+      - name: 7. sınıf ödevlerini çek (7A, 7B)
+        run: |
+          python odev_7a.py
+          python odev_7b.py
+
+      - name: 8. sınıf ödevlerini çek (8A, 8B)
+        run: |
+          python odev_8a.py
+          python odev_8b.py
+
+      - name: Değişiklikleri kaydet ve yayınla
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "Yeni değişiklik yok, commit atlandı."
+          else
+            git commit -m "Ödevler otomatik güncellendi"
+            git push
+          fi
