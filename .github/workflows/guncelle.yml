@@ -1,0 +1,41 @@
+name: Ödevleri Güncelle
+
+on:
+  schedule:
+    - cron: '0 15 * * *' # UTC 15:00 = Türkiye saati 18:00
+  workflow_dispatch:     # Actions sekmesinden istediğin zaman elle çalıştırmak için
+
+permissions:
+  contents: write
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Kütüphaneleri yükle
+        run: pip install requests beautifulsoup4
+
+      - name: 5A ödevlerini çek
+        run: python odev_5a.py
+
+      # Yeni sınıfları ekledikçe buraya alt alta ekleyeceğiz
+
+      - name: Değişiklikleri kaydet
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "Yeni değişiklik yok."
+          else
+            git commit -m "5A ödevleri güncellendi"
+            git push
+          fi
